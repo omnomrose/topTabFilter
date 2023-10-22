@@ -1,16 +1,43 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Animated } from 'react-native';
 
-export default function Home({ navigation }) {
+export default function TopTab({ navigation }) {
     const [activeTab, setActiveTab] = useState('tab1');
+    const slideValue = useRef(new Animated.Value(0)).current;
+    const backgroundSlideValue = useRef(new Animated.Value(0)).current;
 
     const handleTabPress = (tab) => {
         setActiveTab(tab);
+        Animated.parallel([
+            Animated.spring(slideValue, {
+                toValue: tab === 'tab1' ? 0 : tab === 'tab2' ? 1 : 2,
+                useNativeDriver: false,
+                friction: 4,
+            }),
+            Animated.spring(backgroundSlideValue, {
+                toValue: tab === 'tab1' ? 0 : tab === 'tab2' ? 1 : 2,
+                useNativeDriver: false,
+                friction: 8,
+            }),
+        ]).start();
     };
 
     return (
         <View style={styles.container}>
             <View style={styles.tabList}>
+                <Animated.View style={[
+                    styles.tabBackground,
+                    {
+                        transform: [
+                            {
+                                translateX: backgroundSlideValue.interpolate({
+                                    inputRange: [0, 1, 2],
+                                    outputRange: [0, 116, 232],
+                                }),
+                            },
+                        ],
+                    },
+                ]} />
                 <TouchableOpacity
                     style={[
                         styles.tab,
@@ -22,7 +49,7 @@ export default function Home({ navigation }) {
                     <Text style={[
                         styles.tabTitle,
                         activeTab === 'tab1' && styles.activeTabText,
-                        activeTab === 'tab1' && styles.boldText
+                        activeTab === 'tab1' && styles.boldText,
                     ]}>Latest</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -36,7 +63,7 @@ export default function Home({ navigation }) {
                     <Text style={[
                         styles.tabTitle,
                         activeTab === 'tab2' && styles.activeTabText,
-                        activeTab === 'tab2' && styles.boldText
+                        activeTab === 'tab2' && styles.boldText,
                     ]}>Trending</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -50,7 +77,7 @@ export default function Home({ navigation }) {
                     <Text style={[
                         styles.tabTitle,
                         activeTab === 'tab3' && styles.activeTabText,
-                        activeTab === 'tab3' && styles.boldText
+                        activeTab === 'tab3' && styles.boldText,
                     ]}>Popular</Text>
                 </TouchableOpacity>
             </View>
@@ -81,27 +108,31 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
+        position: 'relative'
     },
     tab: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center'
     },
-    activeTab: {
-        backgroundColor: '#629560',
-        borderRadius: 15,
-    },
     tabTitle: {
         fontSize: 12,
-        paddingVertical: 5,
+        paddingVertical: 5
     },
     activeTabText: {
-        color: '#F1EFEF',
+        color: '#F1EFEF'
     },
     boldText: {
-        fontWeight: 'bold',
+        fontWeight: 'bold'
     },
     tabPanels: {
-        alignItems: 'center',
+        alignItems: 'center'
+    },
+    tabBackground: {
+        position: 'absolute',
+        width: '33.33%',
+        backgroundColor: '#629560',
+        borderRadius: 15,
+        height: '100%'
     },
 });
